@@ -1,0 +1,29 @@
+{
+  "endpoints": {
+    "dmc_orders": {
+      "path": "/order/v1",
+      "protocol": "REST",
+      "authProfile": "default_btp"
+    },
+    "dmc_resources": {
+      "path": "/resource/v1",
+      "protocol": "REST",
+      "authProfile": "default_btp"
+    },
+    "custom_mdo": {
+      "path": "/mdo/v4",
+      "protocol": "ODATA_V4",
+      "authProfile": "default_btp"
+    },
+    "legacy_inventory": {
+      "path": "/inventory/v2",
+      "protocol": "ODATA_V2",
+      "authProfile": "default_btp"
+    },
+    "dmci_extractor": {
+      "path": "/dmci/v4/extractor",
+      "protocol": "ODATA_V4",
+      "authProfile": "default_btp"
+    }
+  }
+}

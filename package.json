@@ -1,0 +1,27 @@
+{
+  "name": "dmc-mcp",
+  "version": "1.0.0",
+  "description": "Multi-protocol SAP DMC MCP Server",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "test": "tsx src/test/realApiTest.ts",
+    "extract-metadata": "tsx src/test/extractMetadata.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "dotenv": "^17.4.2",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "tsx": "^4.22.3",
+    "typescript": "^6.0.3"
+  }
+}

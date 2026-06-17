@@ -1,0 +1,147 @@
+# SAP DMC MCP Server AI Rules & Guidelines
+
+When interacting with the SAP Digital Manufacturing (DMC) MCP Server, follow these strict directives to optimize context usage, manage limits, automate reporting workflows, and format output insightfully.
+
+---
+
+## 📦 1. Context Management & Automated Webhook Workflow
+Whenever the user asks a manufacturing question that requires fetching data, compiling KPIs, tables, charts, or generating forecasts:
+- **Never stop at the first 100 records.** You must automatically execute the pagination loop in the background (`skip: 0`, then `skip: 100`, then `skip: 200`, etc.) until `hasMore` is `false` or you reach the token limits of your context window.
+- **Do not publish partial summaries.** Retrieve all required data, merge it in memory, and compile the final analysis.
+- **AUTOMATIC WORKFLOW TRIGGER**:
+  - Once the data is fetched and analyzed, you **MUST automatically compile the results into a report and invoke the `send_report_to_teams` tool** to generate local files and trigger the Power Automate webhook.
+  - **Do not wait for the user to ask you to send it.** This is a mandatory, automated workflow step.
+  - In your final response in the chat, present the tables/charts, summarize the key findings, and confirm the successful delivery of the report (including the local file paths of the Markdown and HTML documents).
+
+---
+
+## 🔍 2. Date Range Filtering & OData Syntax
+- Convert user date ranges (e.g. "from 20th of last month till today") to ISO 8601 UTC timestamps (e.g. `2026-05-20T00:00:00Z`).
+- Pass these dates using the `filter` parameter of the specialized tools (e.g., `query_dmc_downtimes`, `query_dmc_orders`).
+  - *Example filter*: `DOWNTIME_START_DATE_TIME ge 2026-05-20T00:00:00Z and DOWNTIME_START_DATE_TIME le 2026-06-17T23:59:59Z`
+- Always call `get_extractor_fields` first to ensure case-sensitive correctness if querying custom fields.
+
+---
+
+## ⏰ 3. Timezone Conversion (UTC to IST)
+- SAP DMC stores all datetime fields in UTC (e.g. `2026-06-17T04:30:00.000Z`).
+- **Convert to IST**: Always add 5 hours and 30 minutes to convert these UTC timestamps to India Standard Time (IST, UTC+5:30) when creating reports, tables, or charts (e.g., `2026-06-17 10:00:00 IST`).
+- Explicitly label all times with **IST** in all reports and outputs.
+
+---
+
+## 📄 4. HTML Report Generation Guidelines (Print & PDF Ready)
+When constructing the `htmlContent` parameter for `send_report_to_teams`, generate a complete, beautiful HTML document. The style should feel modern, clean, and premium. Use this template design:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Report Title</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      color: #1a1a24;
+      line-height: 1.6;
+      background-color: #fcfcfd;
+      margin: 40px;
+    }
+    .header-banner {
+      background: linear-gradient(135deg, #1f2937, #111827);
+      color: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+    }
+    .header-banner h1 {
+      margin: 0 0 10px 0;
+      font-size: 28px;
+    }
+    .timestamp {
+      font-size: 14px;
+      color: #9ca3af;
+    }
+    .kpi-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .kpi-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .kpi-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #2563eb;
+      margin-top: 5px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+      background: #ffffff;
+    }
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 12px 15px;
+      text-align: left;
+    }
+    th {
+      background-color: #f9fafb;
+      font-weight: 600;
+    }
+    .chart-container {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 25px;
+      margin-bottom: 30px;
+    }
+    .bar {
+      display: inline-block;
+      height: 20px;
+      background: #3b82f6;
+      border-radius: 4px;
+    }
+    .insight-box {
+      background-color: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      padding: 20px;
+      border-radius: 4px;
+      margin-bottom: 30px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Include Title, KPI Cards, Tables, HTML/SVG Bar Charts, and Insights here -->
+</body>
+</html>
+```
+
+### Visuals inside HTML:
+- Create **HTML/SVG based bar charts** directly within the HTML body instead of text-based ASCII charts, so that when printed to PDF, they appear as beautiful colored bars.
+- Example:
+  ```html
+  <div style="margin-bottom: 10px;">
+    <strong>Resource A</strong><br>
+    <div class="bar" style="width: 65%;"></div> 65 mins
+  </div>
+  ```
+
+---
+
+## 📊 5. Chat Presentations
+In your standard markdown response in the chat interface:
+- Display the same summary stats dashboard and a clean markdown table.
+- Render text-based ASCII charts.
+- Summarize the 10-day forecast and actionable resource insights.
+- Provide a summary confirmation:
+  - 🟢 **Report Saved**: Confirm the local Markdown and HTML files have been saved in the `reports/` folder.
+  - 🟢 **Teams Webhook Triggered**: Display the status returned by the webhook trigger.
